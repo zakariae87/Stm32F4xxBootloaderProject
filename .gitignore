@@ -1,28 +1,28 @@
-# A .gitignore for Keil projects.
+# A .gitignore for Keil Bootloader and Application test projects.
 
 
 # User-specific uVision files
-stm32f429_application/MDK_ARM/stm32f429_application/*.uvopt
-stm32f429_application/MDK_ARM/stm32f429_application/*.uvoptx
-stm32f429_application/MDK_ARM/stm32f429_application/*.uvgui
-stm32f429_application/MDK_ARM/stm32f429_application/*.uvgui.*
-stm32f429_application/MDK_ARM/stm32f429_application/*.uvguix.*
-stm32f429_application/MDK_ARM/stm32f429_application/*.scvd
+stm32f4xx_application/MDK_ARM/*.uvopt
+stm32f4xx_application/MDK_ARM/*.uvoptx
+stm32f4xx_application/MDK_ARM/*.uvgui
+stm32f4xx_application/MDK_ARM/*.uvgui.*
+stm32f4xx_application/MDK_ARM/*.uvguix.*
 
-stm32f429_bootloader/MDK_ARM/stm32f429_bootloader/*.uvopt
-stm32f429_bootloader/MDK_ARM/stm32f429_bootloader/*.uvoptx
-stm32f429_bootloader/MDK_ARM/stm32f429_bootloader/*.uvgui
-stm32f429_bootloader/MDK_ARM/stm32f429_bootloader/*.uvgui.*
-stm32f429_bootloader/MDK_ARM/stm32f429_bootloader/*.uvguix.*
-stm32f429_bootloader/MDK_ARM/stm32f429_bootloader/*.scvd
+
+stm32f4xx_bootloader/MDK_ARM/*.uvopt
+stm32f4xx_bootloader/MDK_ARM/*.uvoptx
+stm32f4xx_bootloader/MDK_ARM/*.uvgui
+stm32f4xx_bootloader/MDK_ARM/*.uvgui.*
+stm32f4xx_bootloader/MDK_ARM/*.uvguix.*
+
 
 # Debug config files
-stm32f429_bootloader/MDK_ARM/stm32f429_bootloader/DebugConfig/*
-stm32f429_application/MDK_ARM/stm32f429_application/DebugConfig/*
+stm32f4xx_bootloader/MDK_ARM/DebugConfig/*
+stm32f4xx_application/MDK_ARM/DebugConfig/*
 
 #Builds files
-stm32f429_bootloader/MDK_ARM/stm32f429_bootloader/*
-stm32f429_application/MDK_ARM/stm32f429_application/DebugConfig/*
+stm32f4xx_bootloader/MDK_ARM/stm32f4xx_bootloader/*
+stm32f4xx_application/MDK_ARM/stm32f4xx_application/DebugConfig/*
 
 
 # To explicitly override the above, define any exceptions here; e.g.:
