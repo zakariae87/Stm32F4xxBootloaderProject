@@ -141,6 +141,9 @@ void  bootloader_uart_read_data(void)
 				case BL_GET_CID:
           bootloader_handle_getcid_cmd(bl_rx_buffer);
           break;
+				case BL_GET_RDP_STATUS:
+          bootloader_handle_getrdp_cmd(bl_rx_buffer);
+          break;  
 				default:
           printmsg("BL_DEBUG_MSG:Invalid command code received from host \n");
           break;
@@ -469,8 +472,33 @@ void bootloader_handle_getcid_cmd(uint8_t *pBuffer)
         printmsg("BL_DEBUG_MSG:checksum fail !!\n");
         bootloader_send_nack();
 	}
+}
 
+/* Function to handle BL_GET_RDP_STATUS command */
+void bootloader_handle_getrdp_cmd(uint8_t *pBuffer)
+{
+  uint8_t rdp_level = 0x00;
+  printmsg("BL_DEBUG_MSG:bootloader_handle_getrdp_cmd\n");
 
+  /* Total length of the command packet */
+	uint32_t command_packet_len = bl_rx_buffer[0]+1 ;
+
+	//extract the CRC32 sent by the Host
+	uint32_t host_crc = *((uint32_t * ) (bl_rx_buffer+command_packet_len - 4) ) ;
+
+	if (! bootloader_verify_crc(&bl_rx_buffer[0],command_packet_len-4,host_crc))
+	{
+        printmsg("BL_DEBUG_MSG:checksum success !!\n");
+        bootloader_send_ack(pBuffer[0],1);
+        rdp_level = get_flash_rdp_level();
+        printmsg("BL_DEBUG_MSG:RDP level: %d %#x\n",rdp_level,rdp_level);
+        bootloader_uart_write_data(&rdp_level,1);
+
+	}else
+	{
+        printmsg("BL_DEBUG_MSG:checksum fail !!\n");
+        bootloader_send_nack();
+	}
 }
 
 /*This function sends ACK if CRC matches along with "len to follow"*/
@@ -543,6 +571,28 @@ uint16_t get_mcu_chip_id(void)
 	return  cid;
 
 }
+
+/*This function reads the RDP ( Read protection option byte) value
+ *For more info refer "Table 9. Description of the option bytes" in stm32f446xx RM
+ */
+uint8_t get_flash_rdp_level(void)
+{
+
+	uint8_t rdp_status=0;
+#if 0
+	FLASH_OBProgramInitTypeDef  ob_handle;
+	HAL_FLASHEx_OBGetConfig(&ob_handle);
+	rdp_status = (uint8_t)ob_handle.RDPLevel;
+#else
+
+	 volatile uint32_t *pOB_addr = (uint32_t*) 0x1FFFC000;
+	 rdp_status =  (uint8_t)(*pOB_addr >> 8) ;
+#endif
+
+	return rdp_status;
+
+}
+
 
 
 

@@ -67,11 +67,12 @@ void bootloader_uart_write_data(uint8_t *pBuffer,uint32_t lenght);
 uint8_t get_bootloader_version(void);
 uint8_t bootloader_verify_crc (uint8_t *pData, uint32_t len, uint32_t crc_host);
 uint16_t get_mcu_chip_id(void);
-
+uint8_t get_flash_rdp_level(void);
 
 void bootloader_handle_getver_cmd(uint8_t *bl_rx_buffer);
 void bootloader_handle_gethelp_cmd(uint8_t *bl_rx_buffer);
 void bootloader_handle_getcid_cmd(uint8_t *pBuffer);
+void bootloader_handle_getrdp_cmd(uint8_t *pBuffer);
 
 /*Bootloader commands -----------------------------------------------*/
 
