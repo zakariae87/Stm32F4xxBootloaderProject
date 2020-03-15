@@ -29,8 +29,8 @@
 // enable this line to get Debug messages over UART
 #define BL_DEBUG_MSG_EN
 
-#define C_UART   &huart2
-#define D_UART   &huart3
+#define C_UART   &huart3
+#define D_UART   &huart2
 
 #define BL_RX_LEN  200
 
@@ -42,7 +42,19 @@ UART_HandleTypeDef huart3;
 
 uint8_t bl_rx_buffer[BL_RX_LEN];
 
-
+uint8_t supported_commands[] = {
+                               BL_GET_VER ,
+                               BL_GET_HELP,
+                               BL_GET_CID,
+                               BL_GET_RDP_STATUS,
+                               BL_GO_TO_ADDR,
+                               BL_FLASH_ERASE,
+                               BL_MEM_WRITE,
+															 BL_EN_R_W_PROTECT,
+															 BL_MEM_READ,
+															 BL_OTP_READ,
+															 BL_DIS_R_W_PROTECT,
+                               BL_READ_SECTOR_P_STATUS} ;
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,14 +93,14 @@ int main(void)
   {
 		
 		/* Check whether button is pressed or not, if not pressed jump to user application */
-		if ( HAL_GPIO_ReadPin(BOOT_USER_BUTTON_Port,BOOT_USER_BUTTON_Pin) == GPIO_PIN_RESET )
+		if (!(HAL_GPIO_ReadPin(BOOT_USER_BUTTON_Port,BOOT_USER_BUTTON_Pin) == GPIO_PIN_RESET))
 		{
 			printmsg("BL_DEBUG_MSG:Button is pressed .. going to BL mode\n\r");
-
+			//HAL_GPIO_TogglePin(BOOT_USER_LED_GPIO_Port, BOOT_USER_LED_Pin);
+			//HAL_Delay(200);
 			//we should continue in bootloader mode
 			bootloader_uart_read_data();
-			HAL_GPIO_TogglePin(BOOT_USER_LED_GPIO_Port, BOOT_USER_LED_Pin);
-			HAL_Delay(200);
+
 		}
 		else
 		{
@@ -122,6 +134,12 @@ void  bootloader_uart_read_data(void)
 			{
 				case BL_GET_VER:
 					bootloader_handle_getver_cmd(bl_rx_buffer);
+          break;
+				case BL_GET_HELP:
+					bootloader_handle_gethelp_cmd(bl_rx_buffer);
+          break; 
+				case BL_GET_CID:
+          bootloader_handle_getcid_cmd(bl_rx_buffer);
           break;
 				default:
           printmsg("BL_DEBUG_MSG:Invalid command code received from host \n");
@@ -308,131 +326,26 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOI_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE(); 
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
+  
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(BOOT_USER_LED_GPIO_Port, BOOT_USER_LED_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : PE2 PE3 PE4 PE5 
-                           PE6 PE7 PE8 PE9 
-                           PE10 PE11 PE12 PE13 
-                           PE14 PE15 PE0 PE1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5 
-                          |GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9 
-                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13 
-                          |GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	
+	/*Configure GPIO pin : BOOT_USER_BUTTON_Pin */
+  GPIO_InitStruct.Pin  = BOOT_USER_BUTTON_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PI8 PI9 PI10 PI11 
-                           PI0 PI1 PI2 PI3 
-                           PI4 PI5 PI6 PI7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11 
-                          |GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3 
-                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PC13 PC14 PC15 PC0 
-                           PC1 PC2 PC3 PC4 
-                           PC5 PC6 PC7 PC8 
-                           PC9 PC10 PC11 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0 
-                          |GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4 
-                          |GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8 
-                          |GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PF0 PF1 PF2 PF3 
-                           PF4 PF5 PF7 PF8 
-                           PF9 PF10 PF11 PF12 
-                           PF13 PF14 PF15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3 
-                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7|GPIO_PIN_8 
-                          |GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12 
-                          |GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-
+  HAL_GPIO_Init(BOOT_USER_BUTTON_Port, &GPIO_InitStruct);
+	
   /*Configure GPIO pin : BOOT_USER_LED_Pin */
   GPIO_InitStruct.Pin = BOOT_USER_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BOOT_USER_LED_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PH0 PH1 PH2 PH3 
-                           PH4 PH5 PH6 PH7 
-                           PH8 PH9 PH10 PH11 
-                           PH12 PH13 PH14 PH15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3 
-                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7 
-                          |GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11 
-                          |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA0 PA1 PA4 PA5 
-                           PA6 PA7 PA8 PA9 
-                           PA10 PA11 PA12 PA13 
-                           PA14 PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5 
-                          |GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9 
-                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13 
-                          |GPIO_PIN_14|GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB0 PB1 PB2 PB12 
-                           PB13 PB14 PB15 PB3 
-                           PB4 PB5 PB6 PB7 
-                           PB8 PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_12 
-                          |GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_3 
-                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7 
-                          |GPIO_PIN_8|GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PG0 PG1 PG2 PG3 
-                           PG4 PG5 PG6 PG7 
-                           PG8 PG9 PG10 PG11 
-                           PG12 PG13 PG14 PG15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3 
-                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7 
-                          |GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11 
-                          |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PD8 PD9 PD10 PD11 
-                           PD12 PD13 PD14 PD15 
-                           PD0 PD1 PD2 PD3 
-                           PD4 PD5 PD6 PD7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11 
-                          |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15 
-                          |GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3 
-                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 }
 
@@ -501,6 +414,65 @@ void bootloader_handle_getver_cmd(uint8_t *bl_rx_buffer)
     }
 }
 
+
+/* Function to handle BL_GET_HELP command
+ * Bootloader sends out All supported Command codes
+ */
+void bootloader_handle_gethelp_cmd(uint8_t *pBuffer)
+{
+   printmsg("BL_DEBUG_MSG:bootloader_handle_gethelp_cmd\n");
+
+	/* Total length of the command packet */
+	uint32_t command_packet_len = bl_rx_buffer[0] + 1 ;
+
+	//extract the CRC32 sent by the Host
+	uint32_t host_crc = *((uint32_t * ) (bl_rx_buffer + command_packet_len - 4) ) ;
+
+	if (! bootloader_verify_crc(&bl_rx_buffer[0], command_packet_len - 4,host_crc))
+	{
+        printmsg("BL_DEBUG_MSG:checksum success !!\n");
+        bootloader_send_ack(pBuffer[0], sizeof(supported_commands));
+        bootloader_uart_write_data(supported_commands, sizeof(supported_commands) );
+
+	}
+	else
+	{
+        printmsg("BL_DEBUG_MSG:checksum fail !!\n");
+        bootloader_send_nack();
+	}
+
+}
+
+/* Function to handle BL_GET_CID command */
+void bootloader_handle_getcid_cmd(uint8_t *pBuffer)
+{
+	uint16_t bl_cid_num = 0;
+	printmsg("BL_DEBUG_MSG:bootloader_handle_getcid_cmd\n");
+
+  /* Total length of the command packet */
+	uint32_t command_packet_len = bl_rx_buffer[0] + 1 ;
+
+	/* extract the CRC32 sent by the Host */
+	uint32_t host_crc = *((uint32_t * ) (bl_rx_buffer + command_packet_len - 4) ) ;
+
+	if (! bootloader_verify_crc(&bl_rx_buffer[0], command_packet_len - 4, host_crc))
+	{
+        printmsg("BL_DEBUG_MSG:checksum success !!\n");
+        bootloader_send_ack(pBuffer[0], 2);
+        bl_cid_num = get_mcu_chip_id();
+        printmsg("BL_DEBUG_MSG:MCU id : %d %#x !!\n", bl_cid_num, bl_cid_num);
+        bootloader_uart_write_data((uint8_t *)&bl_cid_num, 2);
+
+	}
+	else
+	{
+        printmsg("BL_DEBUG_MSG:checksum fail !!\n");
+        bootloader_send_nack();
+	}
+
+
+}
+
 /*This function sends ACK if CRC matches along with "len to follow"*/
 void bootloader_send_ack(uint8_t command_code, uint8_t follow_len)
 {
@@ -557,7 +529,20 @@ uint8_t get_bootloader_version(void)
 }
 
 
+/* Read the chip identifier or device Identifie */ 
+uint16_t get_mcu_chip_id(void)
+{
+/*
+	The STM32F42xx/43xxx MCUs integrate an MCU ID code. This ID identifies the ST MCU part number
+	and the die revision. It is part of the DBG_MCU component and is mapped on the
+	external PPB bus (see Section 38.16). This code is accessible using the
+	JTAG debug (4 to 5 pins) or the SW debug port (two pins) or by the user software.
+	It is even accessible while the MCU is under system reset. */
+	uint16_t cid;
+	cid = (uint16_t)(DBGMCU->IDCODE) & 0x0FFF;
+	return  cid;
 
+}
 
 
 
