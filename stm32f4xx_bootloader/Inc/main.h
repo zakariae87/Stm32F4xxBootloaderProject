@@ -56,6 +56,22 @@ void Error_Handler(void);
 #define VERIFY_CRC_FAIL    1
 #define VERIFY_CRC_SUCCESS 0
 
+#define ADDR_VALID 			0x00
+#define ADDR_INVALID 		0x01
+
+/*Some Start and End addresses of different memories of STM32F429xx MCU
+ *Change this according to your MCU 
+ */
+#define SRAM1_SIZE            112*1024     									// STM32F429xx has 112KB of SRAM1
+#define SRAM1_END             (SRAM1_BASE + SRAM1_SIZE)
+#define SRAM2_SIZE            16*1024     									// STM32F429xx has 16KB of SRAM2
+#define SRAM2_END             (SRAM2_BASE + SRAM2_SIZE)
+#define SRAM3_SIZE            64*1024     									// STM32F429xx has 64KB of SRAM3
+#define SRAM3_END             (SRAM3_BASE + SRAM3_SIZE)
+#define FLASH_SIZE            2048*1024   		  						// STM32F429xx has 2MB of FLASH
+#define BKPSRAM_SIZE          4*1024			     							// STM32F429xx has 4KB of SRAM2
+#define BKPSRAM_END           (BKPSRAM_BASE + BKPSRAM_SIZE)
+
 
 /*Bootloader function prototypes -----------------------------------------------*/
 void bootloader_uart_read_data(void);
@@ -68,12 +84,14 @@ uint8_t get_bootloader_version(void);
 uint8_t bootloader_verify_crc (uint8_t *pData, uint32_t len, uint32_t crc_host);
 uint16_t get_mcu_chip_id(void);
 uint8_t get_flash_rdp_level(void);
+uint8_t verify_address(uint32_t go_address);
+
 
 void bootloader_handle_getver_cmd(uint8_t *bl_rx_buffer);
 void bootloader_handle_gethelp_cmd(uint8_t *bl_rx_buffer);
 void bootloader_handle_getcid_cmd(uint8_t *pBuffer);
 void bootloader_handle_getrdp_cmd(uint8_t *pBuffer);
-
+void bootloader_handle_go_adress_cmd(uint8_t *pBuffer);
 /*Bootloader commands -----------------------------------------------*/
 
 //Pattern command
