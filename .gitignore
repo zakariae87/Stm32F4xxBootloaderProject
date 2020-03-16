@@ -3,10 +3,10 @@
 # User-specific uVision files
 *.opt
 *.uvopt
-stm32f4xx_bootloader/MDK-ARM/*.uvoptx
+*.uvoptx
 *.uvgui
-stm32f4xx_bootloader/MDK-ARM/*.uvgui.*
-stm32f4xx_bootloader/MDK-ARM/*.uvguix.*
+*.uvguix.*
+*.uvgui.*
 
 # Listing files
 *.cod
